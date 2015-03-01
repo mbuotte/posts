@@ -12,13 +12,30 @@ from database import session
 @decorators.accept("application/json")
 def posts_get():
     """ Get a list of posts """
+    # Get the querystring arguments
+    title_like = request.args.get("title_like")
+    body_like = request.args.get("body_like")
+    if title_like and body_like:
+      full_filter = "title=title_like, body=body_like"
+    elif title_like:
+      full_filter = "title=title_lie"
+    elif body_like:
+      full_filter = "body=body"
 
-    # Get the posts from the database
-    posts = session.query(models.Post).all()
+    # Get and filter the posts from the database
+    posts = session.query(models.Post)
+    if title_like and body_like:
+        posts = posts.filter(models.Post.title.contains(title_like), models.Post.body.contains(body_like))
+    elif title_like:
+        posts = posts.filter(models.Post.title.contains(title_like))
+    elif body_like:
+        posts = posts.filter(models.Post.body.contains(body_like))
+      
+    posts = posts.all()
 
     # Convert the posts to JSON and return a response
     data = json.dumps([post.as_dictionary() for post in posts])
-    return Response(data, 200, mimetype="application/json")  
+    return Response(data, 200, mimetype="application/json")
   
 @app.route("/api/posts/<int:id>", methods=["GET"])
 @decorators.accept("application/json")
