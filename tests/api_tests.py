@@ -239,7 +239,31 @@ class TestAPI(unittest.TestCase):
 
         data = json.loads(response.data)
         self.assertEqual(data["message"], "'body' is a required property")
-        
+
+    def testPostUpdate(self):
+        """ Updating a post """
+        data = {
+            "title": "New updated title",
+            "body": "Update test"
+        }
+
+        response = self.client.post("/api/posts/1",
+            data=json.dumps(data),
+            content_type="application/json",
+            headers=[("Accept", "application/json")]
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.mimetype, "application/json")
+        self.assertEqual(urlparse(response.headers.get("Location")).path,
+                         "/api/posts/1")
+
+        data = json.loads(response.data)
+        self.assertEqual(data["id"], 1)
+        self.assertEqual(data["title"], "New updated title")
+        self.assertEqual(data["body"], "Update test")
+
+
 if __name__ == "__main__":
     unittest.main()
     
